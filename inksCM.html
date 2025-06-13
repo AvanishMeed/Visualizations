@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Pipeline Flowchart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* gray-100 */
+        }
+        .flowchart-container {
+            display: flex;
+            justify-content: space-around;
+            padding: 2rem;
+            gap: 2rem;
+            overflow-x: auto;
+        }
+        .stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2.5rem; /* Increased gap between nodes */
+            min-width: 300px;
+        }
+        .stage-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827; /* gray-900 */
+            margin-bottom: 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+        .stage-title::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -0.5rem;
+            width: 50%;
+            height: 3px;
+            background-color: #3b82f6; /* blue-500 */
+            border-radius: 2px;
+        }
+        .node {
+            background-color: white;
+            border-radius: 0.75rem; /* lg */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 380px;
+            border-left: 5px solid;
+            position: relative;
+            transition: all 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center content vertically */
+            min-height: 280px; /* Give nodes a consistent height */
+        }
+        .node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .node-title {
+            font-size: 1.125rem; /* xl */
+            font-weight: 600;
+            color: #1f2937; /* gray-800 */
+            margin-bottom: 1rem;
+        }
+        .node-content {
+            font-size: 0.875rem; /* sm */
+            color: #4b5563; /* gray-600 */
+        }
+        .node-content strong {
+            color: #374151; /* gray-700 */
+        }
+        .source-icon {
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+        }
+        .process-info, .source-info, .destination-info {
+            display: flex;
+            align-items: flex-start;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        .info-label {
+            font-weight: 600;
+            width: 100px;
+            flex-shrink: 0;
+            color: #111827;
+        }
+        .info-details {
+            font-family: monospace;
+            background-color: #f9fafb;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            word-break: break-word;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .logo-icon {
+            height: 1.2em;
+            width: 1.2em;
+            flex-shrink: 0;
+        }
+        .node-sql { border-color: #4f46e5; } /* indigo-600 */
+        .node-gads { border-color: #f97316; } /* orange-500 */
+        .node-bing { border-color: #2563eb; } /* blue-600 */
+        .node-sync { border-color: #10b981; } /* emerald-500 */
+        .node-proc { border-color: #d946ef; } /* fuchsia-500 */
+        .node-unified { border-color: #be123c; } /* rose-700 */
+
+        .looker-studio {
+            border-color: #6d28d9; /* violet-700 */
+        }
+
+        .leader-line {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <!-- SVG Definitions for logos -->
+    <svg width="0" height="0" style="display:none;">
+        <symbol id="logo-sqlserver" viewBox="0 0 128 128">
+            <path fill="#E82228" d="M112 16H16a8 8 0 0 0-8 8v24h112V24a8 8 0 0 0-8-8z"/>
+            <path fill="#404040" d="M120 48H8v32h112z"/>
+            <path fill="#0071C5" d="M120 80H8v24a8 8 0 0 0 8 8h96a8 8 0 0 0 8-8z"/>
+            <path fill="#FFFFFF" d="M24 28h-4v12h4v-5c1.1-1.2 2.6-2 4.2-2s3.1.8 4.2 2v5h4V33c0-3.9-3.1-7-7-7s-5.6 3.1-5.4 7v-2zM45 28v12h9v-4h-5V28h-4zm24 0v12h4v-5c1.1-1.2 2.6-2 4.2-2s3.1.8 4.2 2v5h4V33c0-3.9-3.1-7-7-7s-5.6 3.1-5.4 7v-2zm-41 26v12h9v-4h-5V54h-4zm15 0v12h4v-5c1.1-1.2 2.6-2 4.2-2s3.1.8 4.2 2v5h4V59c0-3.9-3.1-7-7-7s-5.6 3.1-5.4 7v-2zm26 0v12h9v-4h-5V54h-4zm15 0v12h4V59c0-3.9-3.1-7-7-7s-7 3.1-7 7v5h4v-5c1.1-1.2 2.6-2 4.2-2s3.1.8 4.2 2zM24 86v12h9v-4h-5V86h-4zm15 0v12h4v-5c1.1-1.2 2.6-2 4.2-2s3.1.8 4.2 2v5h4V91c0-3.9-3.1-7-7-7s-5.6 3.1-5.4 7v-2zm26 0v12h9v-4h-5V86h-4zm15 0v12h4v-5c1.1-1.2 2.6-2 4.2-2s3.1.8 4.2 2v5h4V91c0-3.9-3.1-7-7-7s-5.6 3.1-5.4 7v-2z"/>
+        </symbol>
+        <symbol id="logo-bigquery" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/>
+            <path fill="#FFFFFF" d="M12 10.5c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5-1.57-3.5-3.5-3.5zm0 5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm-5-8.5v3.53c.63-.35 1.37-.53 2.15-.53H12V3.13L7 6z"/>
+        </symbol>
+         <symbol id="logo-looker" viewBox="0 0 24 24">
+            <path d="M12 8.35a3.65 3.65 0 1 0 3.65 3.65A3.65 3.65 0 0 0 12 8.35zm0 5.66a2 2 0 1 1 2-2 2 2 0 0 1-2 2z" fill="#fbbc04"/>
+            <path d="M18.17 9.83a.8.8 0 0 0-.8-.8h-2.5a4.43 4.43 0 0 0-7.74 0H4.63a.8.8 0 0 0-.8.8v2.5a4.43 4.43 0 0 0 0 7.74v2.5a.8.8 0 0 0 .8.8h2.5a4.43 4.43 0 0 0 7.74 0h2.5a.8.8 0 0 0 .8-.8v-2.5a4.43 4.43 0 0 0 0-7.74zM12 21.31a5.31 5.31 0 1 1 5.31-5.31A5.31 5.31 0 0 1 12 21.31z" fill="#4285f4"/>
+            <path d="M12 2.69A5.31 5.31 0 1 0 17.31 8a5.31 5.31 0 0 0-5.31-5.31zm0 8.62a3.31 3.31 0 1 1 3.31-3.31A3.31 3.31 0 0 1 12 11.31z" fill="#4285f4"/>
+        </symbol>
+    </svg>
+
+    <h1 class="text-4xl font-bold text-center text-gray-800 mb-4">Inks CM Report Data Pipeline</h1>
+    <p class="text-center text-gray-500 mb-12 max-w-3xl mx-auto">This flowchart visualizes the entire data flow, from initial data collection from various sources to the final unified dataset ready for reporting in Looker Studio.</p>
+
+    <div class="flowchart-container">
+        <!-- Stage 1: Data Collection -->
+        <div class="stage">
+            <h2 class="stage-title">1. Data Collection</h2>
+            <div id="node1" class="node node-sql">
+                <div class="flex items-center">
+                    <i class="fas fa-database source-icon" style="color: #4f46e5;"></i>
+                    <h3 class="node-title">Backoffice Order Data</h3>
+                </div>
+                <p class="node-content">Extracts comprehensive order data from internal Backoffice systems.</p>
+                <div class="source-info">
+                    <span class="info-label">Source:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-sqlserver"/></svg> <span>SQL Server</span></span>
+                </div>
+                <div class="process-info">
+                    <span class="info-label">Process:</span>
+                    <span class="info-details"><i class="fab fa-python logo-icon" style="color: #306998;"></i> <span>Python Script</span></span>
+                </div>
+                <div id="dest1" class="destination-info">
+                    <span class="info-label">Destination:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>PrinterPix BigQuery</span></span>
+                </div>
+            </div>
+            <div id="node2" class="node node-gads">
+                <div class="flex items-center">
+                    <i class="fab fa-google source-icon" style="color: #f97316;"></i>
+                    <h3 class="node-title">Raw Google Ads Data</h3>
+                </div>
+                <p class="node-content">Ingests raw ad spend, conversions, and campaign data from Google Ads.</p>
+                <div class="source-info">
+                    <span class="info-label">Source:</span>
+                    <span class="info-details"><i class="fab fa-google logo-icon" style="color: #f97316;"></i> <span>Google Ads Bulk Export</span></span>
+                </div>
+                <div class="process-info">
+                    <span class="info-label">Process:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>BQ Data Transfer</span></span>
+                </div>
+                <div id="dest2" class="destination-info">
+                    <span class="info-label">Destination:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>PrinterInks BigQuery</span></span>
+                </div>
+            </div>
+            <div id="node3" class="node node-bing">
+                <div class="flex items-center">
+                    <i class="fab fa-microsoft source-icon" style="color: #2563eb;"></i>
+                    <h3 class="node-title">Raw Bing Ads Data</h3>
+                </div>
+                <p class="node-content">Ingests raw ad spend, conversions, and campaign data from Bing Ads.</p>
+                <div class="source-info">
+                    <span class="info-label">Source:</span>
+                    <span class="info-details"><i class="fab fa-microsoft logo-icon" style="color: #2563eb;"></i> <span>Bing Ads API</span></span>
+                </div>
+                <div class="process-info">
+                    <span class="info-label">Process:</span>
+                    <span class="info-details"><i class="fab fa-python logo-icon" style="color: #306998;"></i> <span>Python Script</span></span>
+                </div>
+                <div id="dest3" class="destination-info">
+                    <span class="info-label">Destination:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>PrinterInks BigQuery</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stage 2: Sync & Process -->
+        <div class="stage">
+            <h2 class="stage-title">2. Sync & Process</h2>
+            <div id="node4" class="node node-sync">
+                <div class="flex items-center">
+                    <i class="fas fa-sync-alt source-icon" style="color: #10b981;"></i>
+                    <h3 class="node-title">Internal Data Sync</h3>
+                </div>
+                <p class="node-content">Syncs internal financial & email data into the central marketing BQ environment.</p>
+                <div class="source-info">
+                    <span class="info-label">Source:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>PrinterPix BQ</span></span>
+                </div>
+                <div class="process-info">
+                    <span class="info-label">Process:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>Dataset Copy Job</span></span>
+                </div>
+                <div id="dest4" class="destination-info">
+                    <span class="info-label">Destination:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>PrinterInks BQ</span></span>
+                </div>
+            </div>
+            <div id="node5" class="node node-proc">
+                <div class="flex items-center">
+                    <i class="fas fa-cogs source-icon" style="color: #d946ef;"></i>
+                    <h3 class="node-title">Google Ads Processing</h3>
+                </div>
+                <p class="node-content">Consolidates brand-specific Google Ads data into a single unified table.</p>
+                <div class="source-info">
+                    <span class="info-label">Source:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>PrinterInks BigQuery</span></span>
+                </div>
+                <div class="process-info">
+                    <span class="info-label">Process:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>Scheduled SQL</span></span>
+                </div>
+                <div id="dest5" class="destination-info">
+                    <span class="info-label">Destination:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>PrinterInks BigQuery</span></span>
+                </div>
+            </div>
+             <div id="node6" class="node node-proc">
+                <div class="flex items-center">
+                     <i class="fas fa-cogs source-icon" style="color: #d946ef;"></i>
+                    <h3 class="node-title">Bing Ads Processing</h3>
+                </div>
+                <p class="node-content">Consolidates brand-specific Bing Ads data into a single unified table.</p>
+                <div class="source-info">
+                    <span class="info-label">Source:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>PrinterInks BigQuery</span></span>
+                </div>
+                 <div class="process-info">
+                    <span class="info-label">Process:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>Scheduled SQL</span></span>
+                </div>
+                <div id="dest6" class="destination-info">
+                    <span class="info-label">Destination:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>PrinterInks BigQuery</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stage 3: Unification -->
+        <div class="stage">
+            <h2 class="stage-title">3. Unification</h2>
+            <div id="node7" class="node node-unified">
+                <div class="flex items-center">
+                    <i class="fas fa-layer-group source-icon" style="color: #be123c;"></i>
+                    <h3 class="node-title">Marketing & Order Unification</h3>
+                </div>
+                <p class="node-content">Merges marketing, email, and order data. Resolves product types to create a comprehensive dataset.</p>
+                 <div class="source-info">
+                    <span class="info-label">Source:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>PrinterInks BigQuery</span></span>
+                </div>
+                <div class="process-info">
+                    <span class="info-label">Process:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>Scheduled SQL</span></span>
+                </div>
+                <div id="dest7" class="destination-info">
+                    <span class="info-label">Destination:</span>
+                    <span class="info-details"><svg class="logo-icon"><use href="#logo-bigquery"/></svg> <span>PrinterInks BigQuery</span></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stage 4: Reporting -->
+        <div class="stage">
+            <h2 class="stage-title">4. Reporting</h2>
+             <div id="node8" class="node looker-studio">
+                <div class="flex items-center">
+                    <svg class="logo-icon source-icon" style="fill: #6d28d9;"><use href="#logo-looker"/></svg>
+                    <h3 class="node-title">Looker Studio Report</h3>
+                </div>
+                <p class="node-content">The final unified table is directly connected to Looker Studio for complete Contribution Margin (CM) reporting and analysis.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let lines = [];
+        const lineOptions = {
+            color: 'rgba(55, 65, 81, 0.6)', // gray-600 with opacity
+            size: 2,
+            path: 'fluid',
+            startSocket: 'right',
+            endSocket: 'left',
+            startPlug: 'disc',
+            endPlug: 'arrow1',
+            dash: { animation: true }
+        };
+
+        function drawLines() {
+            // Clear existing lines
+            lines.forEach(line => line.remove());
+            lines = [];
+            
+            // Define connections
+            const connections = [
+                { start: 'dest1', end: 'node4', options: { color: '#4f46e5' } },
+                { start: 'dest2', end: 'node5', options: { color: '#f97316' } },
+                { start: 'dest3', end: 'node6', options: { color: '#2563eb' } },
+                { start: 'dest4', end: 'node7', options: { color: '#10b981', startSocket: 'right', endSocket: 'left' } },
+                { start: 'dest5', end: 'node7', options: { color: '#d946ef' } },
+                { start: 'dest6', end: 'node7', options: { color: '#d946ef' } },
+                { start: 'dest7', end: 'node8', options: { color: '#be123c' } }
+            ];
+
+            // Create new lines
+            connections.forEach(conn => {
+                const startEl = document.getElementById(conn.start);
+                const endEl = document.getElementById(conn.end);
+                if(startEl && endEl) {
+                    const finalOptions = { ...lineOptions, ...conn.options };
+                    try {
+                       lines.push(new LeaderLine(startEl, endEl, finalOptions));
+                    } catch(e) {
+                        console.error("Could not draw line:", e);
+                    }
+                }
+            });
+        }
+        
+        // Initial draw after a short delay to ensure elements are rendered
+        window.addEventListener('load', () => setTimeout(drawLines, 100));
+
+
+        // Redraw on resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(drawLines, 200);
+        });
+    </script>
+</body>
+</html>
